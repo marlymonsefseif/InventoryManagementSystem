@@ -38,6 +38,9 @@ namespace InventoryManagementSystem.Controllers
             return Ok("Removed Successfully");
         }
 
+
+
+        [Authorize(Roles = "Admin")]
         [HttpGet("/TransactionReport/{id:int}")]
         public IActionResult TransactionReport(int id)
         {

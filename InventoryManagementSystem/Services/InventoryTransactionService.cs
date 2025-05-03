@@ -74,16 +74,60 @@ namespace InventoryManagementSystem.Services
             await _transactionService.SaveChangesAsync();
         }
 
+        //public void TransferStock(int productId, int fromWarehouseId, int toWarehouseId, int quantity)
+        //{
+        //    var fromInventory = _productWarehouseRepository
+        //        .Get(pw => pw.ProductId == productId && pw.WarehouseId == fromWarehouseId);
+
+        //    var toInventory = _productWarehouseRepository
+        //        .Get(pw => pw.ProductId == productId && pw.WarehouseId == toWarehouseId);
+
+        //    if (fromInventory == null || fromInventory < quantity)
+        //        throw new InvalidOperationException("Not enough stock to transfer.");
+
+        //    if (toInventory == null)
+        //    {
+        //        // Create new record if destination warehouse doesn't have this product yet
+        //        toInventory = new ProductWarehouse
+        //        {
+        //            ProductId = productId,
+        //            WarehouseId = toWarehouseId,
+        //            Quantity = 0
+        //        };
+        //        _productWarehouseRepository.Add(toInventory);
+        //    }
+
+        //    fromInventory.Quantity -= quantity;
+        //    toInventory.Quantity += quantity;
+
+        //    // Log transaction
+        //    var transaction = new InventoryTransaction
+        //    {
+        //        ProductId = productId,
+        //        Quantity = quantity,
+        //        TransactionType = TransactionType.TransferStock,
+        //        TransactionDate = DateTime.Now,
+        //        SourceWarehouseId = fromWarehouseId,
+        //        DestinationWarehouseId = toWarehouseId
+        //    };
+        //    _transactionRepository.Add(transaction);
+
+        //    _context.SaveChanges();
+        //}
+
+
         public IQueryable<TransactionReportDto> GetTransactionReport(int Id)
         {
-            return _transactionService.Get(p => p.ProductId == Id)
+            return _transactionService.Get(p => p.Product.CategoryId == Id)
                 .Select(t => new TransactionReportDto
                 {
                     ProductId = t.ProductId,
+                    CategoryId = t.Product.CategoryId,
                     ProductName = t.Product.Name,
                     TransactionDate = t.TransactionDate,
-                    TransactionType = (DTO.TransactionType)t.TransactionType,
                     Quantity = t.Quantity,
+                    SourceWarehouseId = t.SourceWarehouseId,
+                    DestinationWarehouseId = t.DestinationWarehouseId
                 });
         }
 

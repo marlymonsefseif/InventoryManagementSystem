@@ -20,7 +20,7 @@ namespace InventoryManagementSystem.Controllers
         [HttpPost("/AddStock")]
         public async Task<IActionResult> AddStock(AddStockDto stock)
         {
-            if(!ModelState.IsValid) 
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             await _transactionService.InsertStock(stock);
@@ -38,7 +38,15 @@ namespace InventoryManagementSystem.Controllers
             return Ok("Removed Successfully");
         }
 
+        [HttpGet("{ProductId:int}/{FromWarehouseId:int}/{ToWarehouseId:int}/{Quantity:int}")]
+        public IActionResult TransferStock(int ProductId, int FromWarehouseId, int ToWarehouseId, int Quantity)
+        {
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState);
 
+            var stock = _transactionService.TransferStock(ProductId, FromWarehouseId, ToWarehouseId, Quantity);
+            return Ok("Transfered Successfully");
+        }
 
         [Authorize(Roles = "Admin")]
         [HttpGet("/TransactionReport/{id:int}")]

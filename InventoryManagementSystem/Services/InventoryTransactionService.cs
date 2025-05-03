@@ -74,46 +74,41 @@ namespace InventoryManagementSystem.Services
             await _transactionService.SaveChangesAsync();
         }
 
-        //public void TransferStock(int productId, int fromWarehouseId, int toWarehouseId, int quantity)
-        //{
-        //    var fromInventory = _productWarehouseRepository
-        //        .Get(pw => pw.ProductId == productId && pw.WarehouseId == fromWarehouseId);
+        public async Task TransferStock(int productId, int fromWarehouseId, int toWarehouseId, int quantity)
+        {
+            var fromWarehouse = _productWarehouseRepository
+                .SpecificGet(pw => pw.ProductId == productId && pw.WarehouseId == fromWarehouseId);
 
-        //    var toInventory = _productWarehouseRepository
-        //        .Get(pw => pw.ProductId == productId && pw.WarehouseId == toWarehouseId);
+            var toWarehouse = _productWarehouseRepository
+                .SpecificGet(pw => pw.ProductId == productId && pw.WarehouseId == toWarehouseId);
 
-        //    if (fromInventory == null || fromInventory < quantity)
-        //        throw new InvalidOperationException("Not enough stock to transfer.");
+            if (toWarehouse == null)
+            {
+                toWarehouse = new ProductWarehouse
+                {
+                    ProductId = productId,
+                    WarehouseId = toWarehouseId,
+                    Quantity = 0
+                };
+                _productWarehouseRepository.Insert(toWarehouse);
+            }
 
-        //    if (toInventory == null)
-        //    {
-        //        // Create new record if destination warehouse doesn't have this product yet
-        //        toInventory = new ProductWarehouse
-        //        {
-        //            ProductId = productId,
-        //            WarehouseId = toWarehouseId,
-        //            Quantity = 0
-        //        };
-        //        _productWarehouseRepository.Add(toInventory);
-        //    }
+            fromWarehouse.Quantity -= quantity;
+            toWarehouse.Quantity += quantity;
 
-        //    fromInventory.Quantity -= quantity;
-        //    toInventory.Quantity += quantity;
+            var transaction = new InventoryTransaction
+            {
+                ProductId = productId,
+                Quantity = quantity,
+                TransactionType = Models.TransactionType.TransferStock,
+                TransactionDate = DateTime.Now,
+                SourceWarehouseId = fromWarehouseId,
+                DestinationWarehouseId = toWarehouseId
+            };
+            _transactionService.Insert(transaction);
 
-        //    // Log transaction
-        //    var transaction = new InventoryTransaction
-        //    {
-        //        ProductId = productId,
-        //        Quantity = quantity,
-        //        TransactionType = TransactionType.TransferStock,
-        //        TransactionDate = DateTime.Now,
-        //        SourceWarehouseId = fromWarehouseId,
-        //        DestinationWarehouseId = toWarehouseId
-        //    };
-        //    _transactionRepository.Add(transaction);
-
-        //    _context.SaveChanges();
-        //}
+            await _transactionService.SaveChangesAsync();
+        }
 
 
         public IQueryable<TransactionReportDto> GetTransactionReport(int Id)
